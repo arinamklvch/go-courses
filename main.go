@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 )
@@ -27,7 +28,16 @@ type Result struct {
 	Err     error
 }
 
-const baseURL = "https://homeworksite.site/%d/info.0.json"
+const defaultMovieBaseURL = "https://homeworksite.site"
+
+func movieBaseURL() string {
+	baseURL := os.Getenv("MOVIE_BASE_URL")
+	if baseURL == "" {
+		baseURL = defaultMovieBaseURL
+	}
+
+	return strings.TrimRight(baseURL, "/")
+}
 
 func validateFlags(from, to, workers, timeout int) error {
 	seen := make(map[string]bool)
@@ -58,7 +68,7 @@ func validateFlags(from, to, workers, timeout int) error {
 }
 
 func downloadMovie(ctx context.Context, client *http.Client, filmID int) (Movie, error) {
-	url := fmt.Sprintf(baseURL, filmID)
+	url := fmt.Sprintf("%s/%d/info.0.json", movieBaseURL(), filmID)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
