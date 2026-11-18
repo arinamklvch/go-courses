@@ -1,0 +1,104 @@
+definitions:
+  data.Movie:
+    properties:
+      director:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      year:
+        type: integer
+    type: object
+  data.MovieResponse:
+    properties:
+      director:
+        type: string
+      error:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      year:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: HTTP API for loading movie ranges and finding the last available movie.
+  title: Movies Downloader API
+  version: "1.0"
+paths:
+  /last-movie:
+    get:
+      description: Searches movie IDs from 1 to 200000 and returns the movie with
+        the highest available ID in that range.
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "200":
+          description: The last available movie in the search range
+          schema:
+            $ref: '#/definitions/data.Movie'
+        "404":
+          description: No movies found in the search range; plain-text error
+          schema:
+            type: string
+        "500":
+          description: Failed to create a request to the movie service; plain-text
+            error
+          schema:
+            type: string
+        "502":
+          description: Failed to search for or download the movie; plain-text error
+          schema:
+            type: string
+      summary: Get the last available movie
+      tags:
+      - movies
+  /load-movies:
+    get:
+      description: Loads the inclusive range [from, to]. Each result contains the
+        requested ID and either a movie or an error. Partial failures are included
+        in the 200 response; 502 means no movies were loaded. Results may arrive in
+        any order.
+      parameters:
+      - description: First movie ID (inclusive)
+        in: query
+        minimum: 1
+        name: from
+        required: true
+        type: integer
+      - description: Last movie ID (inclusive); must be greater than or equal to from
+        in: query
+        minimum: 1
+        name: to
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "200":
+          description: At least one movie loaded; individual errors may also be present
+          schema:
+            items:
+              $ref: '#/definitions/data.MovieResponse'
+            type: array
+        "400":
+          description: Missing or invalid parameters, or from is greater than to;
+            plain-text error
+          schema:
+            type: string
+        "502":
+          description: No movies loaded; the array contains an error for each requested
+            ID
+          schema:
+            items:
+              $ref: '#/definitions/data.MovieResponse'
+            type: array
+      summary: Load a range of movies
+      tags:
+      - movies
+swagger: "2.0"

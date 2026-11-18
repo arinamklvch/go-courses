@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/arinamklvch/go-courses/internal/pb";
+
+message Movie {
+  int64 id = 1;
+  string title = 2;
+  int64 year = 3;
+  string director = 4;
+}
+
+message LoadMoviesRequest {
+    int64 from = 1;
+    int64 to = 2;
+}
+
+message MovieResult {
+    int64 id = 1;
+    Movie movie = 2;
+    string error = 3;
+}
+
+message LoadMoviesResponse {
+    repeated MovieResult results = 1;
+}
+
+message GetLastMovieRequest {
+}
+
+service MoviesService{
+    rpc LoadMovies(LoadMoviesRequest) returns (LoadMoviesResponse);
+    rpc GetLastMovie(GetLastMovieRequest) returns (Movie);
+} 
