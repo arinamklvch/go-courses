@@ -5,15 +5,14 @@ import (
 	"errors"
 	"log"
 
-	"github.com/arinamklvch/go-courses/internal/movies"
+	"github.com/arinamklvch/go-courses/internal/domain"
 	"github.com/arinamklvch/go-courses/internal/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *GRPCServer) GetLastMovie(ctx context.Context, _ *pb.GetLastMovieRequest) (*pb.Movie, error) {
-	client := s.movieClient
-	lastMovie, err := movies.GetLast(ctx, client, s.movieBaseURL)
+	lastMovie, err := s.movieUseCase.GetLastMovie(ctx)
 	if ctx.Err() != nil {
 		log.Printf("gRPC GetLastMovie: request ended: %v", ctx.Err())
 		return nil, status.FromContextError(ctx.Err()).Err()
@@ -21,11 +20,11 @@ func (s *GRPCServer) GetLastMovie(ctx context.Context, _ *pb.GetLastMovieRequest
 
 	if err != nil {
 		log.Printf("gRPC GetLastMovie: %v", err)
-		if errors.Is(err, movies.ErrMovieNotFound) {
+		if errors.Is(err, domain.ErrMovieNotFound) {
 			return nil, status.Error(codes.NotFound, "no movies found")
 		}
 		code := codes.Unavailable
-		if errors.Is(err, movies.ErrCreateMovieRequest) {
+		if errors.Is(err, domain.ErrCreateMovieRequest) {
 			code = codes.Internal
 		}
 		return nil, status.Error(code, "failed to find last movie")

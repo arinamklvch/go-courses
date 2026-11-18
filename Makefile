@@ -1,6 +1,6 @@
 GOCACHE ?= /tmp/go-build
 GOLANGCI_LINT ?= golangci-lint
-COURSE_DIR ?= ../go-courses
+COURSE_DIR ?= $(HOME)/.cache/go-courses/course
 
 .PHONY: fmt fmt-check lint grade vet build run ci
 
@@ -15,6 +15,10 @@ lint: ## Run golangci-lint
 
 grade: ## Run course acceptance tests for the homework specified by TASK
 	@test -n "$(TASK)" || { echo "Usage: make grade TASK=<number>"; exit 1; }
+	@if [ ! -f "$(COURSE_DIR)/autotests/scripts/ci.py" ]; then \
+		mkdir -p "$$(dirname "$(COURSE_DIR)")" && \
+		git clone --depth 1 --branch main https://github.com/vacmannnn/go-courses.git "$(COURSE_DIR)"; \
+	fi
 	GOCACHE=$(GOCACHE) python3 "$(COURSE_DIR)/autotests/scripts/ci.py" --repo "$(CURDIR)" --task "$(TASK)"
 
 vet: ## Run go vet

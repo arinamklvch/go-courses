@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/last-movie": {
             "get": {
-                "description": "Searches movie IDs from 1 to 200000 and returns the movie with the highest available ID in that range.",
+                "description": "Finds the highest available movie ID by expanding the search bounds and using binary search. Assumes available movie IDs are consecutive starting at 1.",
                 "produces": [
                     "application/json",
                     "text/plain"
@@ -29,13 +29,13 @@ const docTemplate = `{
                 "summary": "Get the last available movie",
                 "responses": {
                     "200": {
-                        "description": "The last available movie in the search range",
+                        "description": "The last available movie",
                         "schema": {
-                            "$ref": "#/definitions/data.Movie"
+                            "$ref": "#/definitions/dto.Movie"
                         }
                     },
                     "404": {
-                        "description": "No movies found in the search range; plain-text error",
+                        "description": "No movies found; plain-text error",
                         "schema": {
                             "type": "string"
                         }
@@ -90,7 +90,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/data.MovieResponse"
+                                "$ref": "#/definitions/dto.MovieResponse"
                             }
                         }
                     },
@@ -100,12 +100,18 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "500": {
+                        "description": "Unexpected use case error; plain-text error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "502": {
                         "description": "No movies loaded; the array contains an error for each requested ID",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/data.MovieResponse"
+                                "$ref": "#/definitions/dto.MovieResponse"
                             }
                         }
                     }
@@ -114,7 +120,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "data.Movie": {
+        "dto.Movie": {
             "type": "object",
             "properties": {
                 "director": {
@@ -131,7 +137,7 @@ const docTemplate = `{
                 }
             }
         },
-        "data.MovieResponse": {
+        "dto.MovieResponse": {
             "type": "object",
             "properties": {
                 "director": {
